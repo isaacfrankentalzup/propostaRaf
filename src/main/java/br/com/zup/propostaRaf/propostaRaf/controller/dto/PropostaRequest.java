@@ -1,9 +1,8 @@
 package br.com.zup.propostaRaf.propostaRaf.controller.dto;
 
 import br.com.zup.propostaRaf.propostaRaf.model.Proposta;
-import br.com.zup.propostaRaf.propostaRaf.utils.CPFCNPJ;
+import br.com.zup.propostaRaf.propostaRaf.validators.CPFCNPJ;
 
-import javax.persistence.Column;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;

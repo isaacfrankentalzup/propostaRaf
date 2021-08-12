@@ -1,4 +1,4 @@
-package br.com.zup.propostaRaf.propostaRaf.utils;
+package br.com.zup.propostaRaf.propostaRaf.validators;
 
 import org.hibernate.validator.constraints.CompositionType;
 import org.hibernate.validator.constraints.ConstraintComposition;
@@ -23,3 +23,4 @@ public @interface CPFCNPJ {
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }
+

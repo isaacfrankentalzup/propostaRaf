@@ -1,5 +1,7 @@
 package br.com.zup.propostaRaf.propostaRaf.model;
 
+import br.com.zup.propostaRaf.propostaRaf.model.analise.PropostaStatus;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 
@@ -12,7 +14,7 @@ public class Proposta {
         @Column(nullable = false, unique = true)
         private String documento;
 
-        @Column(nullable = false)
+        @Column(nullable = false, unique = true)
         private String email;
 
         @Column(nullable = false)
@@ -23,6 +25,13 @@ public class Proposta {
 
         @Column(nullable = false)
         private BigDecimal salario;
+
+        private PropostaStatus estatus = PropostaStatus.ANALISE;
+
+        private String numerCartao;
+
+    public Proposta() {
+    }
 
     public Proposta(String documento, String email, String nome, String endereco, BigDecimal salario) {
             this.documento = documento;
@@ -55,5 +64,21 @@ public class Proposta {
     public BigDecimal getSalario() {
         return salario;
     }
+
+    public String getNumerCartao() { return numerCartao;}
+
+    public PropostaStatus getEstatus() {
+        return estatus;
+    }
+
+    public void setEstatus(PropostaStatus estatus){
+        this.estatus = estatus;
+    }
+
+    public void setNumerCartao(String numerCartao){
+        this.numerCartao = numerCartao;
+    }
 }
+
+//010 010.nao_pode_haver_proposta.md
 
