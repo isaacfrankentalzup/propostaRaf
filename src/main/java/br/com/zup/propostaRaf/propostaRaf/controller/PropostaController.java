@@ -26,10 +26,17 @@ public class PropostaController {
     @PostMapping
     public ResponseEntity<?> salvaProposta(@RequestBody @Valid PropostaRequest propostaRequest){
 
+        Boolean existsDocNoBanco = propostaRepository.existsByDocumento(propostaRequest.getDocumento());
+
+        if (existsDocNoBanco){
+            return ResponseEntity.unprocessableEntity().build(); // vai retornar 422
+        }
+
         Proposta proposta = propostaRequest.toProposta();
 
         Proposta propostaSalva =  propostaRepository.save(proposta);
 
+        // para retornar um status 201
         URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")
                 .buildAndExpand(propostaSalva.getId()).toUri();
 
