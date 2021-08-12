@@ -57,3 +57,5 @@ public class Proposta {
     }
 }
 
+//010 010.nao_pode_haver_proposta.md
+
