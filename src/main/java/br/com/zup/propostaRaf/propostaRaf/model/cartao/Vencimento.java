@@ -7,17 +7,18 @@ import java.time.LocalDateTime;
 @Entity
 public class Vencimento {
     @Id
-    public String id;
-    public Integer dia;
-    public LocalDateTime localDateTime;
+    private String id;
+    private Integer dia;
+    private LocalDateTime dataDeCriacao;
 
+    @Deprecated //usado pelo hibernate
     public Vencimento() {
     }
 
-    public Vencimento(String id, Integer dia, LocalDateTime localDateTime) {
+    public Vencimento(String id, Integer dia, LocalDateTime dataDeCriacao) {
         this.id = id;
         this.dia = dia;
-        this.localDateTime = localDateTime;
+        this.dataDeCriacao = dataDeCriacao;
     }
 
     public String getId() {
@@ -28,15 +29,7 @@ public class Vencimento {
         return dia;
     }
 
-    public LocalDateTime getLocalDateTime() {
-        return localDateTime;
+    public LocalDateTime getDataDeCriacao() {
+        return dataDeCriacao;
     }
 }
-
-/*
-"vencimento": {
-    "id": "string",
-    "dia": 0,
-    "dataDeCriacao": "2021-08-14T13:22:44.051Z"
-  },
- */
