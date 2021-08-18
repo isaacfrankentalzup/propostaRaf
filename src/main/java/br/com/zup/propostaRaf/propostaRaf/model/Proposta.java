@@ -14,7 +14,7 @@ public class Proposta {
         @Column(nullable = false, unique = true)
         private String documento;
 
-        @Column(nullable = false, unique = true)
+        @Column(nullable = false)
         private String email;
 
         @Column(nullable = false)

@@ -1,10 +1,10 @@
 package br.com.zup.propostaRaf.propostaRaf.model.cartao;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
+import br.com.zup.propostaRaf.propostaRaf.model.biometria.Biometria;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,29 +12,35 @@ import java.util.List;
 public class Cartao {
     @Id
     private String id;
+    private LocalDateTime emitidoEm;
     private String titular;
     private BigDecimal limite;
     private String idProposta;
     @OneToMany
-    private List<Bloqueios> bloqueios = new ArrayList<>();
+    private List<Bloqueios> bloqueios;
     @OneToMany
-    private List<Avisos> avisos = new ArrayList<>();
+    private List<Avisos> avisos;
     @OneToMany
-    private List<Carteiras> carteiras = new ArrayList<>();
+    private List<Carteiras> carteiras;
     @OneToMany
-    private List<Parcelas> parcelas = new ArrayList<>();
-    @OneToOne
+    private List<Parcelas> parcelas;
+    @OneToOne(cascade = CascadeType.ALL)
     private Renegociacao renegociacao;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Vencimento vencimento;
 
+    @OneToMany
+    private List<Biometria> biometrias = new ArrayList<>();
 
- @Deprecated
- public Cartao() {
- }
+    @Deprecated //usado pelo hibernate
+    public Cartao() {
+    }
 
-    public Cartao(String id, String titular, BigDecimal limite, String idProposta, List<Bloqueios> bloqueios, List<Avisos> avisos, List<Carteiras> carteiras, List<Parcelas> parcelas, Renegociacao renegociacao, Vencimento vencimento) {
+    public Cartao(String id, LocalDateTime emitidoEm, String titular, BigDecimal limite, String idProposta,
+                  List<Bloqueios> bloqueios, List<Avisos> avisos, List<Carteiras> carteiras, List<Parcelas> parcelas,
+                  Renegociacao renegociacao, Vencimento vencimento) {
         this.id = id;
+        this.emitidoEm = emitidoEm;
         this.titular = titular;
         this.limite = limite;
         this.idProposta = idProposta;
@@ -82,7 +88,23 @@ public class Cartao {
         return renegociacao;
     }
 
-    public Vencimento getVencimento() {
+    public Vencimento getVencimentos() {
         return vencimento;
+    }
+
+    public LocalDateTime getEmitidoEm() {
+        return emitidoEm;
+    }
+
+    public void AdicionarBloqueios(Bloqueios bloqueios) {
+        this.bloqueios.add(bloqueios);
+    }
+
+    public List<Biometria> getBiometrias() {
+        return biometrias;
+    }
+
+    public void setBiometrias(Biometria biometrias) {
+        this.biometrias.add(biometrias);
     }
 }

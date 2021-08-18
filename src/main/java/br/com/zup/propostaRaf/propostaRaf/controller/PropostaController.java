@@ -10,117 +10,124 @@ import br.com.zup.propostaRaf.propostaRaf.model.analise.PropostaStatus;
 import br.com.zup.propostaRaf.propostaRaf.model.analise.ResultadoSolicitacao;
 import br.com.zup.propostaRaf.propostaRaf.model.cartao.Cartao;
 import br.com.zup.propostaRaf.propostaRaf.model.novoCartao.NovoCartaoDTO;
+import br.com.zup.propostaRaf.propostaRaf.repository.CartaoRepository;
 import br.com.zup.propostaRaf.propostaRaf.repository.PropostaRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/propostas")
+@RequestMapping("${api.proposta}")
 public class PropostaController {
 
-    private PropostaRepository propostaRepository;
-    private PropostaFeign feign;
+    private PropostaRepository repository;
+    private CartaoRepository cartaoRepository;
+    private PropostaFeign propostaFeign;
     private CartaoFeign cartaoFeign;
 
-    public PropostaController(PropostaRepository propostaRepository, PropostaFeign feign, CartaoFeign cartaoFeign) {
-        this.propostaRepository = propostaRepository;
-        this.feign = feign;
+    public PropostaController(PropostaRepository repository, CartaoRepository cartaoRepository,
+                              PropostaFeign propostaFeign, CartaoFeign cartaoFeign) {
+        this.repository = repository;
+        this.cartaoRepository = cartaoRepository;
+        this.propostaFeign = propostaFeign;
         this.cartaoFeign = cartaoFeign;
     }
 
     @PostMapping
-    public ResponseEntity<?> salvaProposta(@RequestBody @Valid PropostaRequest propostaRequest) {
+    public ResponseEntity<?> salvaProposta(@RequestBody @Valid PropostaRequest propostaRequest){
 
-        Boolean existsDocNoBanco = propostaRepository.existsByDocumento(propostaRequest.getDocumento());
-        Boolean existsEmailNoBanco = propostaRepository.existsByEmail(propostaRequest.getEmail());
+        Boolean existeDocNoBanco = repository.existsByDocumento(propostaRequest.getDocumento());
 
-        if (existsDocNoBanco) {
-            return ResponseEntity.unprocessableEntity().build(); // vai retornar 422
-        }
-        if (existsEmailNoBanco){
-            return ResponseEntity.unprocessableEntity().build(); // vai retornar 422
+        if(existeDocNoBanco){
+            return ResponseEntity.unprocessableEntity().build(); //422 unproce
         }
 
         Proposta proposta = propostaRequest.toProposta();
-
-        Proposta propostaSalva = propostaRepository.save(proposta);
-
-        // para retornar um status 201
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}")
-                .buildAndExpand(propostaSalva.getId()).toUri();
-
-        return ResponseEntity.created(uri).build();  //201 created
+        ResponseEntity.ok(repository.save(proposta));
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(proposta.getId()).toUri();
+        return ResponseEntity.created(uri).build(); //201 - create
     }
 
-    //public void teste(@RequestBody )
-
-    @PostMapping("/analises") //api/v1/propostas/analises { nome, documento, idproposta }
-    public Proposta analise(@RequestBody DadosAnaliseRequest dadosAnaliseRequest) {
+    @PostMapping("/analises")
+    public Proposta teste(@RequestBody DadosAnaliseRequest dadosAnaliseRequest){
 
         //primeiro verifico se proposta enviada pelo cliente existe
         Optional<Proposta> propostaAtual =
-                propostaRepository.findById(Long.parseLong(dadosAnaliseRequest.getIdProposta()));
+                repository.findById(Long.parseLong(dadosAnaliseRequest.getIdProposta()));
 
-        if (propostaAtual.isPresent()) {
+        if(propostaAtual.isPresent()){
 
             //consulta a api externa
-            DadosAnaliseResponse resultadoAnalise = feign.dadosParaAnalise(dadosAnaliseRequest);
+            DadosAnaliseResponse resultadoAnalise = propostaFeign.dadosParaAnalise(dadosAnaliseRequest);
 
-            if (resultadoAnalise.getResultadoSolicitacao().equals(ResultadoSolicitacao.SEM_RESTRICAO)) {
+            if(resultadoAnalise.getResultadoSolicitacao().equals(ResultadoSolicitacao.SEM_RESTRICAO)){
                 propostaAtual.get().setEstatus(PropostaStatus.ELEGIVEL);
-            } else {
+            }else{
                 propostaAtual.get().setEstatus(PropostaStatus.NAO_ELEGIVEL);
             }
-            propostaRepository.save(propostaAtual.get());
+            repository.save(propostaAtual.get());
+
         }
         return propostaAtual.get();
     }
 
     @PostMapping("/cartao/gerar/")
-    @Transactional
-    public void geraCartao(@RequestBody NovoCartaoDTO novoCartaoDTO) {
+    public void geraCartao(@RequestBody NovoCartaoDTO novoCartaoDTO){
 
-        //preciso saber em qual proposta devo atrelar meu cartao
-        Optional<Proposta> propostaAtual = propostaRepository.findById(Long.parseLong(novoCartaoDTO.getIdProposta()));
+        //saber em qual proposta eu vou atrelar meu cartao
+        Optional<Proposta> propostaAtual = repository.findById(Long.parseLong(novoCartaoDTO.getIdProposta()));
 
-        if (propostaAtual.isPresent()) {
+        if(propostaAtual.isPresent()){
 
-            // se existir, cria um novo cartão
-            Cartao cartao = cartaoFeign.getCartao(novoCartaoDTO);
+            //cria um novo cartao
+            Cartao cartao =  cartaoFeign.getCartao(novoCartaoDTO);
 
-            if (cartao != null) {
+            if(cartao != null){
+                //variavel para pegar o ID do cartao que é o número do cartao
+                cartaoRepository.save(cartao);
 
-                //variavel para pegar o id do cartão e 0 numero do cartão
-                String numerCartao = cartao.getId();  // o meu é long. Da aula é String
+                //SALVO O CARTÃO NA BASE DE DADOS
+                String numerCartao = cartao.getId();
 
-                // pega a proposta e seta um novo numero de cartao
+                //INSIRO NA PROPOSTA O NÚMERO CARTAO
                 propostaAtual.get().setNumerCartao(numerCartao);
+
+                //OU SALVO A PROPOSTA COM O NUMERO CARTAO OU UTILIZO
+                //SENÃO POSSO SALVAR USANDO @Transactional para que fique automático o UPDATE
+                repository.save(propostaAtual.get());
+
             }
         }
-            }
+
+    }
 
     @GetMapping("/acompanhamento/{idProposta}")
     public ResponseEntity<Proposta> consultaProposta(@PathVariable String idProposta){
-        Optional<Proposta> temProposta = propostaRepository.findById(Long.parseLong(idProposta));
+
+        Optional<Proposta> temProposta = repository.findById(Long.parseLong(idProposta));
 
         if(temProposta.isPresent()){
             return ResponseEntity.ok(temProposta.get());
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.notFound().build();
+
+    }
+
+    @GetMapping("/listandotudo")
+    public List<Proposta> verTudo(){
+
+        List<Proposta> listarTudo = repository.findAll();
+
+        return  listarTudo;
+
     }
 
 
-    @GetMapping("/listaproposta")
-    public List<Proposta> listAll(){
-        return propostaRepository.findAll();
-    }
 
 }
