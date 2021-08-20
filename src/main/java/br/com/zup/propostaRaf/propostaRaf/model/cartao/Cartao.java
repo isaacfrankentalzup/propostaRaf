@@ -107,4 +107,13 @@ public class Cartao {
     public void setBiometrias(Biometria biometrias) {
         this.biometrias.add(biometrias);
     }
+
+    public void addBloqueio(Bloqueios novoBloqueio){
+        this.bloqueios.add(novoBloqueio);
+    }
+
+
+
+
+
 }

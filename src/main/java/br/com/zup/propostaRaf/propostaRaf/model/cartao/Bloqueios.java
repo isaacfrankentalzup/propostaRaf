@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class Bloqueios {
     @Id
     private String id;
-    private LocalDateTime bloqueadoEm;
+    private LocalDateTime bloqueadoEm = LocalDateTime.now();
     private String sistemaResponse;
     private Boolean ativo;
 
@@ -16,9 +16,8 @@ public class Bloqueios {
     public Bloqueios() {
     }
 
-    public Bloqueios(String id, LocalDateTime bloqueiadoEm, String sistemaResponse, Boolean ativo) {
+    public Bloqueios(String id, String sistemaResponse, Boolean ativo) {
         this.id = id;
-        this.bloqueadoEm = bloqueiadoEm;
         this.sistemaResponse = sistemaResponse;
         this.ativo = ativo;
     }

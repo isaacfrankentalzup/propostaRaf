@@ -124,7 +124,7 @@ public class PropostaController {
 
         List<Proposta> listarTudo = repository.findAll();
 
-        return  listarTudo;
+        return  verTudo();
 
     }
 
